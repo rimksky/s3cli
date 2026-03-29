@@ -13,7 +13,7 @@ jobs:
     name: Build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false  # 1ターゲットが失敗しても他は継続
+      fail-fast: false  # continue other targets if one fails
       matrix:
         include:
           - target: aarch64-apple-darwin
@@ -44,10 +44,10 @@ jobs:
 
       - run: cargo install cargo-zigbuild
 
-      - name: ビルド
+      - name: Build
         run: cargo zigbuild --release --target ${{ matrix.target }}
 
-      - name: アーティファクトをアップロード
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
@@ -55,7 +55,7 @@ jobs:
 
   release:
     name: Create Release
-    needs: build  # 全ターゲットのビルド成功後に実行
+    needs: build  # run after all targets succeed
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -64,14 +64,14 @@ jobs:
         with:
           path: artifacts
 
-      - name: バイナリをリネーム
+      - name: Rename binaries
         run: |
           mkdir dist
           mv artifacts/s3cli-macos-arm64/s3cli        dist/s3cli-macos-arm64
           mv artifacts/s3cli-linux-x64/s3cli          dist/s3cli-linux-x64
           mv artifacts/s3cli-windows-x64.exe/s3cli.exe dist/s3cli-windows-x64.exe
 
-      - name: GitHub Release を作成してバイナリをアップロード
+      - name: Create GitHub Release and upload binaries
         uses: softprops/action-gh-release@v2
         with:
           files: |
