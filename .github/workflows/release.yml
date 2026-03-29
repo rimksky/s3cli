@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # 1ターゲットが失敗しても他は継続
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            bin: s3cli
+            artifact: s3cli-macos-arm64
+          - target: x86_64-pc-windows-gnu
+            os: ubuntu-latest
+            bin: s3cli.exe
+            artifact: s3cli-windows-x64.exe
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            bin: s3cli
+            artifact: s3cli-linux-x64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - uses: goto-bus-stop/setup-zig@v2
+
+      - run: cargo install cargo-zigbuild
+
+      - name: ビルド
+        run: cargo zigbuild --release --target ${{ matrix.target }}
+
+      - name: アーティファクトをアップロード
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/${{ matrix.target }}/release/${{ matrix.bin }}
+
+  release:
+    name: Create Release
+    needs: build  # 全ターゲットのビルド成功後に実行
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: バイナリをリネーム
+        run: |
+          mv artifacts/s3cli-macos-arm64/s3cli       artifacts/s3cli-macos-arm64
+          mv artifacts/s3cli-linux-x64/s3cli         artifacts/s3cli-linux-x64
+          mv artifacts/s3cli-windows-x64.exe/s3cli.exe artifacts/s3cli-windows-x64.exe
+
+      - name: GitHub Release を作成してバイナリをアップロード
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/s3cli-macos-arm64
+            artifacts/s3cli-linux-x64
+            artifacts/s3cli-windows-x64.exe
