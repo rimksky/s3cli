@@ -66,14 +66,15 @@ jobs:
 
       - name: バイナリをリネーム
         run: |
-          mv artifacts/s3cli-macos-arm64/s3cli       artifacts/s3cli-macos-arm64
-          mv artifacts/s3cli-linux-x64/s3cli         artifacts/s3cli-linux-x64
-          mv artifacts/s3cli-windows-x64.exe/s3cli.exe artifacts/s3cli-windows-x64.exe
+          mkdir dist
+          mv artifacts/s3cli-macos-arm64/s3cli        dist/s3cli-macos-arm64
+          mv artifacts/s3cli-linux-x64/s3cli          dist/s3cli-linux-x64
+          mv artifacts/s3cli-windows-x64.exe/s3cli.exe dist/s3cli-windows-x64.exe
 
       - name: GitHub Release を作成してバイナリをアップロード
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/s3cli-macos-arm64
-            artifacts/s3cli-linux-x64
-            artifacts/s3cli-windows-x64.exe
+            dist/s3cli-macos-arm64
+            dist/s3cli-linux-x64
+            dist/s3cli-windows-x64.exe
