@@ -1,6 +1,6 @@
 # s3cli
 
-A simple CLI tool for uploading, downloading, and listing files on AWS S3.
+A simple CLI tool for uploading, downloading, and listing files on AWS S3, and listing buckets.
 
 ## Build
 
@@ -67,6 +67,7 @@ If an IAM role is attached to the instance or task, credentials are resolved aut
 
 | Command | Permission |
 |---|---|
+| buckets | `s3:ListAllMyBuckets` |
 | upload | `s3:PutObject` |
 | download | `s3:GetObject` |
 | list | `s3:ListBucket` |
@@ -74,6 +75,28 @@ If an IAM role is attached to the instance or task, credentials are resolved aut
 ---
 
 ## Commands
+
+### buckets
+
+```
+s3cli buckets
+```
+
+Lists all S3 buckets in the account.
+
+```bash
+./s3cli buckets
+```
+
+Output:
+
+```
+my-bucket
+another-bucket
+logs-bucket
+```
+
+---
 
 ### upload
 
