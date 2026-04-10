@@ -2,6 +2,8 @@
 
 A simple CLI tool for uploading, downloading, and listing files on AWS S3, and listing buckets.
 
+You can also override the S3 endpoint per command, which makes the CLI usable with S3 PrivateLink endpoints and other custom S3-compatible endpoints.
+
 ## Build
 
 ```bash
@@ -59,6 +61,23 @@ Switch profiles with:
 export AWS_PROFILE=myprofile
 ```
 
+### Endpoint override
+
+You can override the S3 endpoint in the following order of priority:
+
+1. `--endpoint-url <url>`
+2. `S3CLI_ENDPOINT_URL`
+3. `AWS_ENDPOINT_URL_S3`
+
+Examples:
+
+```bash
+./s3cli --endpoint-url https://bucket.vpce-xxxxxxxx.s3.ap-northeast-1.vpce.amazonaws.com list my-bucket
+./s3cli --endpoint-url https://bucket.vpce-xxxxxxxx.s3.ap-northeast-1.vpce.amazonaws.com upload my-bucket logs/app.log ./app.log
+```
+
+When an endpoint override is set, `s3cli` automatically enables path-style bucket addressing. This is often required for PrivateLink environments.
+
 ### 3. IAM role (EC2 / ECS / Lambda)
 
 If an IAM role is attached to the instance or task, credentials are resolved automatically with no additional configuration.
@@ -79,7 +98,7 @@ If an IAM role is attached to the instance or task, credentials are resolved aut
 ### buckets
 
 ```
-s3cli buckets
+s3cli [--endpoint-url <url>] buckets
 ```
 
 Lists all S3 buckets in the account.
@@ -101,7 +120,7 @@ logs-bucket
 ### upload
 
 ```
-s3cli upload <bucket> <key> <file>
+s3cli [--endpoint-url <url>] upload <bucket> <key> <file>
 ```
 
 | Argument | Description |
@@ -120,7 +139,7 @@ s3cli upload <bucket> <key> <file>
 ### download
 
 ```
-s3cli download <bucket> <key> [output]
+s3cli [--endpoint-url <url>] download <bucket> <key> [output]
 ```
 
 | Argument | Description |
@@ -139,7 +158,7 @@ s3cli download <bucket> <key> [output]
 ### list
 
 ```
-s3cli list <bucket> [prefix]
+s3cli [--endpoint-url <url>] list <bucket> [prefix]
 ```
 
 | Argument | Description |
@@ -161,6 +180,12 @@ Output:
 ```
 
 Left column is size in bytes, right column is the object key.
+
+## Notes for S3 PrivateLink
+
+- Use your VPC endpoint-specific S3 URL with `--endpoint-url`.
+- Keep the AWS region aligned with the endpoint you use.
+- `buckets` may be restricted depending on your PrivateLink routing and IAM or endpoint policy. Bucket-scoped commands such as `list`, `upload`, and `download` are the safer primary workflow.
 
 ## License
 
