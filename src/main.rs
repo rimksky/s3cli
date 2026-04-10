@@ -83,9 +83,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn parse_args(args: Vec<String>) -> Result<CliOptions, Box<dyn Error>> {
-    let mut endpoint_url = std::env::var("S3CLI_ENDPOINT_URL")
-        .ok()
-        .or_else(|| std::env::var("AWS_ENDPOINT_URL_S3").ok());
+    let mut endpoint_url = None;
     let mut position = 0;
 
     while let Some(arg) = args.get(position) {
@@ -168,7 +166,7 @@ fn build_s3_client(config: &SdkConfig, endpoint_url: Option<&str>) -> aws_sdk_s3
     let mut builder = aws_sdk_s3::config::Builder::from(config);
 
     if let Some(endpoint_url) = endpoint_url {
-        builder = builder.endpoint_url(endpoint_url).force_path_style(true);
+        builder = builder.endpoint_url(endpoint_url);
     }
 
     aws_sdk_s3::Client::from_conf(builder.build())
@@ -176,18 +174,12 @@ fn build_s3_client(config: &SdkConfig, endpoint_url: Option<&str>) -> aws_sdk_s3
 
 fn print_usage() {
     eprintln!("Usage:");
-    eprintln!("  s3cli [--endpoint-url <url>] buckets");
-    eprintln!("  s3cli [--endpoint-url <url>] upload   <bucket> <key> <file>");
-    eprintln!("  s3cli [--endpoint-url <url>] download <bucket> <key> [output]");
-    eprintln!("  s3cli [--endpoint-url <url>] list     <bucket> [prefix]");
+    eprintln!("  s3cli buckets");
+    eprintln!("  s3cli upload   <bucket> <key> <file>");
+    eprintln!("  s3cli download <bucket> <key> [output]");
+    eprintln!("  s3cli list     <bucket> [prefix]");
     eprintln!();
     eprintln!("Options:");
     eprintln!("  --endpoint-url <url>    Override the S3 endpoint URL for all commands");
     eprintln!("  -h, --help              Show this help");
-    eprintln!();
-    eprintln!("Environment:");
-    eprintln!("  S3CLI_ENDPOINT_URL      Default endpoint URL if the CLI option is omitted");
-    eprintln!("  AWS_ENDPOINT_URL_S3     AWS SDK-compatible S3 endpoint override");
-    eprintln!();
-    eprintln!("When an endpoint override is set, the client enables path-style bucket addressing.");
 }

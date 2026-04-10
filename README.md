@@ -2,7 +2,7 @@
 
 A simple CLI tool for uploading, downloading, and listing files on AWS S3, and listing buckets.
 
-You can also override the S3 endpoint per command, which makes the CLI usable with S3 PrivateLink endpoints and other custom S3-compatible endpoints.
+You can also override the S3 endpoint in the same three ways used by AWS CLI, which makes the CLI usable with S3 endpoint-based access such as PrivateLink and proxy-bypass setups.
 
 ## Build
 
@@ -61,13 +61,13 @@ Switch profiles with:
 export AWS_PROFILE=myprofile
 ```
 
-### Endpoint override
+### S3 endpoint settings
 
-You can override the S3 endpoint in the following order of priority:
+`s3cli` follows the same S3 endpoint configuration order as AWS CLI:
 
 1. `--endpoint-url <url>`
-2. `S3CLI_ENDPOINT_URL`
-3. `AWS_ENDPOINT_URL_S3`
+2. `AWS_ENDPOINT_URL_S3`
+3. `~/.aws/config` service-specific S3 settings
 
 Examples:
 
@@ -76,7 +76,21 @@ Examples:
 ./s3cli --endpoint-url https://bucket.vpce-xxxxxxxx.s3.ap-northeast-1.vpce.amazonaws.com upload my-bucket logs/app.log ./app.log
 ```
 
-When an endpoint override is set, `s3cli` automatically enables path-style bucket addressing. This is often required for PrivateLink environments.
+```bash
+export AWS_ENDPOINT_URL_S3=https://s3-ap-northeast-1.amazonaws.com
+./s3cli list my-bucket
+```
+
+```ini
+# ~/.aws/config
+[default]
+region = ap-northeast-1
+services = s3
+
+[services s3]
+s3 =
+  endpoint_url = https://s3-ap-northeast-1.amazonaws.com
+```
 
 ### 3. IAM role (EC2 / ECS / Lambda)
 
