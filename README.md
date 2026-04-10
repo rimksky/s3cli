@@ -195,12 +195,6 @@ Output:
 
 Left column is size in bytes, right column is the object key.
 
-## Notes for S3 PrivateLink
-
-- Use your VPC endpoint-specific S3 URL with `--endpoint-url`.
-- Keep the AWS region aligned with the endpoint you use.
-- `buckets` may be restricted depending on your PrivateLink routing and IAM or endpoint policy. Bucket-scoped commands such as `list`, `upload`, and `download` are the safer primary workflow.
-
 ## License
 
 MIT License — Copyright (c) 2026 rimksky@gmail.com
